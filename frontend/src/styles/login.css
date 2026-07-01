@@ -1,0 +1,317 @@
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background: #f4f6f7;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  padding-top: 30px;
+}
+
+/* formes du background selon ton Figma */
+.login-shape-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 275px;
+  height: 315px;
+  background: #f6ecd8;
+  clip-path: polygon(0 0, 78% 0, 100% 19%, 100% 100%, 0 91%);
+  z-index: 0;
+}
+
+.login-shape-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 295px;
+  height: 300px;
+  background: #dff3e7;
+  clip-path: polygon(18% 0, 100% 0, 100% 86%, 44% 100%, 0 93%);
+  z-index: 0;
+}
+
+/* grand cadre blanc */
+.login-frame {
+  position: relative;
+  z-index: 1;
+  width: 89%;
+  max-width: 1120px;
+  min-height: 437px;
+  background: #ffffff;
+  border: 1.4px solid #f6c84e;
+  border-radius: 28px;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.08);
+  display: grid;
+  grid-template-columns: 1.14fr 0.86fr;
+  align-items: center;
+  padding: 24px 36px;
+}
+
+/* carte gauche */
+.login-brand-card {
+  width: 100%;
+  max-width: 475px;
+  min-height: 377px;
+  background: #fffaf0;
+  border: 1.4px solid #f6c84e;
+  border-radius: 20px;
+  padding: 17px 72px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.login-brand-logo {
+  width: 172px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  align-self: center;
+  margin-bottom: 18px;
+}
+
+.login-brand-content {
+  width: 100%;
+}
+
+.login-brand-content h1 {
+  font-size: 28px;
+  line-height: 0.95;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: -0.7px;
+  margin-bottom: 14px;
+}
+
+.login-brand-content h3 {
+  color: #d66a00;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
+
+.login-brand-content p {
+  color: #4b5563;
+  font-size: 13.5px;
+  line-height: 1.15;
+  margin-bottom: 52px;
+}
+
+.login-pills {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.login-pills span {
+  min-width: 86px;
+  height: 24px;
+  border-radius: 999px;
+  background: #f8e9b7;
+  color: #111827;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-pills span:nth-child(2) {
+  background: #d8f8e6;
+}
+
+.login-pills span:nth-child(3) {
+  background: #dcecff;
+}
+
+/* zone formulaire */
+.login-form-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* carte formulaire */
+.login-card {
+  width: 344px;
+  min-height: 335px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.12);
+  padding: 39px 37px 27px;
+}
+
+.login-card h2 {
+  text-align: center;
+  color: #111827;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  margin-bottom: 43px;
+}
+
+/* quand erreur, le titre monte un peu comme dans ton prototype incorrect */
+.login-card-error {
+  padding-top: 34px;
+}
+
+.login-card-error h2 {
+  margin-bottom: 10px;
+}
+
+/* message rouge */
+.login-error-message {
+  width: 100%;
+  height: 22px;
+  border: 1.2px solid #ff8b8b;
+  background: #fff5f5;
+  color: #dc2626;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.login-help-text {
+  color: #6b7280;
+  font-size: 11.5px;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+
+.login-form-group {
+  margin-bottom: 13px;
+}
+
+.login-form-group label {
+  display: block;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.login-input {
+  width: 100%;
+  height: 28px;
+  border: 1.3px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  color: #25364f;
+}
+
+.login-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #111827;
+  font-size: 12px;
+}
+
+.login-input input[type="password"] {
+  letter-spacing: 1.5px;
+}
+
+.login-input:focus-within {
+  border-color: #f6a21a;
+  background: #ffffff;
+}
+
+.login-input.is-error {
+  border-color: #ef4444;
+  background: #fffafa;
+}
+
+.login-input.is-error:focus-within {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.11);
+}
+
+.login-eye-button {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #25364f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.login-submit-button {
+  width: 100%;
+  height: 31px;
+  border: none;
+  outline: none;
+  border-radius: 9px;
+  background: #f6a21a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.login-submit-button:hover {
+  background: #ef9400;
+}
+
+/* responsive */
+@media (max-width: 920px) {
+  .login-page {
+    align-items: center;
+    padding: 20px;
+  }
+
+  .login-frame {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px;
+  }
+
+  .login-brand-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-frame {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .login-brand-card {
+    min-height: auto;
+    padding: 18px 24px;
+  }
+
+  .login-brand-logo {
+    width: 150px;
+  }
+
+  .login-brand-content h1 {
+    font-size: 26px;
+  }
+
+  .login-pills {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .login-card {
+    width: 100%;
+  }
+}
