@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Boxes,
@@ -18,28 +18,39 @@ import {
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
-import { products as initialProducts } from "../data/mockData";
+import * as productService from "../services/productService";
 import "../styles/products.css";
 
-const STORAGE_KEY = "kamana_products";
-
-function getStoredProducts() {
-  const savedProducts = localStorage.getItem(STORAGE_KEY);
-  return savedProducts ? JSON.parse(savedProducts) : initialProducts;
-}
-
 function Products({ user, onLogout }) {
-  const [products, setProducts] = useState(getStoredProducts);
+  const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Toutes categories");
   const [statusFilter, setStatusFilter] = useState("Tous statuts stock");
   const [productToDelete, setProductToDelete] = useState(null);
   const [productToView, setProductToView] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const saveProducts = (updatedProducts) => {
-    setProducts(updatedProducts);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProducts));
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const loadedProducts = await productService.getProducts();
+        if (isMounted) setProducts(loadedProducts);
+      } catch {
+        if (isMounted) setError("Impossible de charger les produits.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const categories = useMemo(() => {
     const uniqueCategories = [
@@ -82,15 +93,18 @@ function Products({ user, onLogout }) {
     (product) => product.status === "Rupture" || Number(product.stock) === 0
   ).length;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!productToDelete) return;
 
-    const updatedProducts = products.filter(
-      (product) => product.id !== productToDelete.id
-    );
-
-    saveProducts(updatedProducts);
-    setProductToDelete(null);
+    try {
+      await productService.deleteProduct(productToDelete.id);
+      setProducts((currentProducts) =>
+        currentProducts.filter((product) => product.id !== productToDelete.id)
+      );
+      setProductToDelete(null);
+    } catch {
+      setError("Impossible de supprimer le produit.");
+    }
   };
 
   const resetFilters = () => {
@@ -98,6 +112,14 @@ function Products({ user, onLogout }) {
     setCategoryFilter("Toutes categories");
     setStatusFilter("Tous statuts stock");
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout activePage="products" user={user} onLogout={onLogout}>
+        <section className="products-page">Chargement...</section>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout activePage="products" user={user} onLogout={onLogout}>
@@ -113,6 +135,8 @@ function Products({ user, onLogout }) {
             Ajouter Produit
           </Link>
         </div>
+
+        {error && <div className="product-form-error">{error}</div>}
 
         <div className="products-stats">
           <article className="product-stat-card">

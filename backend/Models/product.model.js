@@ -1,137 +1,71 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
-    name: {
+    id: {
       type: String,
-      required: [true, "Le nom du produit est obligatoire"],
-      trim: true,
-      minlength: [2, "Le nom doit contenir au moins 2 caractères"],
-      maxlength: [150, "Le nom ne peut pas dépasser 150 caractères"],
-    },
-
-    sku: {
-      type: String,
-      required: [true, "Le code SKU est obligatoire"],
+      required: true,
       unique: true,
       trim: true,
-      uppercase: true,
     },
-
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: [true, "La catégorie du produit est obligatoire"],
-    },
-
-    description: {
+    name: {
       type: String,
+      required: true,
       trim: true,
-      maxlength: [1000, "La description ne peut pas dépasser 1000 caractères"],
-      default: "",
     },
-
-    purchasePrice: {
-      type: Number,
-      min: [0, "Le prix d'achat ne peut pas être négatif"],
-      default: 0,
+    category: {
+      type: String,
+      required: true,
+      trim: true,
     },
-
-    salePrice: {
-      type: Number,
-      required: [true, "Le prix de vente est obligatoire"],
-      min: [0, "Le prix de vente ne peut pas être négatif"],
+    price: {
+      type: String,
+      required: true,
+      trim: true,
     },
-
     stock: {
-      type: Number,
-      min: [0, "Le stock ne peut pas être négatif"],
-      default: 0,
+      type: String,
+      required: true,
+      trim: true,
     },
-
-    alertThreshold: {
-      type: Number,
-      min: [0, "Le seuil d'alerte ne peut pas être négatif"],
-      default: 5,
-    },
-
     unit: {
       type: String,
-      enum: {
-        values: [
-          "piece",
-          "bouteille",
-          "verre",
-          "portion",
-          "kg",
-          "g",
-          "litre",
-          "ml",
-        ],
-        message: "L'unité {VALUE} n'est pas valide",
-      },
-      default: "piece",
+      required: true,
+      trim: true,
     },
-
-    image: {
-      url: {
-        type: String,
-        trim: true,
-        default: "",
-      },
-
-      publicId: {
-        type: String,
-        trim: true,
-        default: "",
-      },
+    status: {
+      type: String,
+      default: "Disponible",
+      trim: true,
     },
-
-    isActive: {
-      type: Boolean,
-      default: true,
+    dateAdded: {
+      type: String,
+      trim: true,
     },
-
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+    description: {
+      type: String,
+      default: "Aucune description.",
+      trim: true,
+    },
+    minStock: {
+      type: String,
+      default: "0",
+      trim: true,
+    },
+    reference: {
+      type: String,
+      required: true,
+      trim: true,
     },
   },
   {
+    id: false,
     timestamps: true,
     versionKey: false,
-    toJSON: {
-      virtuals: true,
-    },
-    toObject: {
-      virtuals: true,
-    },
   }
 );
 
-// Indique automatiquement si le stock est faible.
-productSchema.virtual("isLowStock").get(function () {
-  return this.stock <= this.alertThreshold;
-});
+productSchema.index({ name: "text", id: "text", reference: "text", category: "text" });
+productSchema.index({ status: 1, category: 1, createdAt: -1 });
 
-// Marge bénéficiaire unitaire.
-productSchema.virtual("profit").get(function () {
-  return this.salePrice - this.purchasePrice;
-});
-
-// Index utiles pour la recherche, le filtrage et la pagination.
-productSchema.index({
-  name: "text",
-  sku: "text",
-});
-
-productSchema.index({
-  category: 1,
-  isActive: 1,
-  createdAt: -1,
-});
-
-const Product = mongoose.model("Product", productSchema);
-
-export default Product;
+module.exports = mongoose.models.Product || mongoose.model("Product", productSchema);

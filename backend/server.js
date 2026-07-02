@@ -1,16 +1,24 @@
-//========== importing modules or packages
-const app=require('./app');
-const dotenv=require('dotenv');
-dotenv.config({path:'./Config/conf.env'});
+const dotenv = require("dotenv");
+const path = require("path");
+const app = require("./app");
 const connectDB = require("./Config/db");
+const seedDatabase = require("./Config/seed");
 
-//========declaring our variables 
-const port=process.env.PORT;
+dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, "Config", "conf.env") });
 
-//==== starting DB
-connectDB();
+const port = process.env.PORT || 3050;
 
-//===== starting our server
-app.listen(port,()=>{
-    console.log(' \n App is running on http://127.0.0.1:'+port +'\n');  
-})
+const startServer = async () => {
+  await connectDB();
+  await seedDatabase();
+
+  app.listen(port, () => {
+    console.log(`App is running on http://127.0.0.1:${port}`);
+  });
+};
+
+startServer().catch((error) => {
+  console.error(`Erreur démarrage serveur : ${error.message}`);
+  process.exit(1);
+});

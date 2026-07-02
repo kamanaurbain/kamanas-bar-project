@@ -2,20 +2,8 @@ import { useState } from "react";
 import { Calendar, Save, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { products as initialProducts } from "../data/mockData";
+import * as productService from "../services/productService";
 import "../styles/products.css";
-
-const STORAGE_KEY = "kamana_products";
-
-function getStoredProducts() {
-  const savedProducts = localStorage.getItem(STORAGE_KEY);
-  return savedProducts ? JSON.parse(savedProducts) : initialProducts;
-}
-
-function generateProductId(products) {
-  const nextNumber = products.length + 1;
-  return `PRO-${String(nextNumber).padStart(3, "0")}`;
-}
 
 function AddProduct({ user, onLogout }) {
   const navigate = useNavigate();
@@ -34,6 +22,7 @@ function AddProduct({ user, onLogout }) {
   });
 
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -46,7 +35,7 @@ function AddProduct({ user, onLogout }) {
     if (error) setError("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (
@@ -61,10 +50,7 @@ function AddProduct({ user, onLogout }) {
       return;
     }
 
-    const storedProducts = getStoredProducts();
-
     const newProduct = {
-      id: generateProductId(storedProducts),
       name: formData.name,
       category: formData.category,
       price: formData.price,
@@ -77,11 +63,14 @@ function AddProduct({ user, onLogout }) {
       reference: formData.reference,
     };
 
-    const updatedProducts = [newProduct, ...storedProducts];
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProducts));
-
-    navigate("/products");
+    try {
+      setSaving(true);
+      await productService.createProduct(newProduct);
+      navigate("/products");
+    } catch {
+      setError("Impossible d'enregistrer le produit.");
+      setSaving(false);
+    }
   };
 
   return (
@@ -274,7 +263,7 @@ function AddProduct({ user, onLogout }) {
                 Annuler
               </Link>
 
-              <button type="submit" className="save-btn">
+              <button type="submit" className="save-btn" disabled={saving}>
                 <Save size={15} />
                 Enregistrer le produit
               </button>

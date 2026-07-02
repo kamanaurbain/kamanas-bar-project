@@ -1,7 +1,3 @@
-const generateSaleNumber = () => {
-  const timestamp = Date.now();
+const { generateSaleId } = require("./idGenerator");
 
-  return `VTE-${timestamp}`;
-};
-
-module.exports = generateSaleNumber;
+module.exports = generateSaleId;

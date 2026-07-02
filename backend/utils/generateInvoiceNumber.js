@@ -1,7 +1,3 @@
-const generateInvoiceNumber = () => {
-  const timestamp = Date.now();
+const { generateInvoiceId } = require("./idGenerator");
 
-  return `FAC-${timestamp}`;
-};
-
-module.exports = generateInvoiceNumber;
+module.exports = generateInvoiceId;

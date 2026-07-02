@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Eye,
   Pencil,
@@ -16,28 +16,39 @@ import {
 import { Link } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
-import { sales as initialSales } from "../data/mockData";
+import * as saleService from "../services/saleService";
 import "../styles/sales.css";
 
-const STORAGE_KEY = "kamana_sales";
-
-function getStoredSales() {
-  const savedSales = localStorage.getItem(STORAGE_KEY);
-  return savedSales ? JSON.parse(savedSales) : initialSales;
-}
-
 function Sales({ user, onLogout }) {
-  const [sales, setSales] = useState(getStoredSales);
+  const [sales, setSales] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Tous statuts");
   const [cashierFilter, setCashierFilter] = useState("Tous caissiers");
   const [saleToDelete, setSaleToDelete] = useState(null);
   const [saleToView, setSaleToView] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const saveSales = (updatedSales) => {
-    setSales(updatedSales);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSales));
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSales = async () => {
+      try {
+        const loadedSales = await saleService.getSales();
+        if (isMounted) setSales(loadedSales);
+      } catch {
+        if (isMounted) setError("Impossible de charger les ventes.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadSales();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const cashiers = useMemo(() => {
     const uniqueCashiers = [...new Set(sales.map((sale) => sale.cashier))];
@@ -75,12 +86,18 @@ function Sales({ user, onLogout }) {
       return sum + number;
     }, 0);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!saleToDelete) return;
 
-    const updatedSales = sales.filter((sale) => sale.id !== saleToDelete.id);
-    saveSales(updatedSales);
-    setSaleToDelete(null);
+    try {
+      await saleService.deleteSale(saleToDelete.id);
+      setSales((currentSales) =>
+        currentSales.filter((sale) => sale.id !== saleToDelete.id)
+      );
+      setSaleToDelete(null);
+    } catch {
+      setError("Impossible de supprimer la vente.");
+    }
   };
 
   const resetFilters = () => {
@@ -88,6 +105,14 @@ function Sales({ user, onLogout }) {
     setStatusFilter("Tous statuts");
     setCashierFilter("Tous caissiers");
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout activePage="sales" user={user} onLogout={onLogout}>
+        <section className="sales-page">Chargement...</section>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout activePage="sales" user={user} onLogout={onLogout}>
@@ -103,6 +128,8 @@ function Sales({ user, onLogout }) {
             Nouvelle vente
           </Link>
         </div>
+
+        {error && <div className="sale-form-error">{error}</div>}
 
         <div className="sales-stats">
           <article className="sale-stat-card">

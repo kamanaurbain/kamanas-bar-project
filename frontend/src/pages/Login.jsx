@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { authUser } from "../data/mockData";
+import * as authService from "../services/authService";
 import "../styles/login.css";
 import logo from "../assets/logo.png";
 
@@ -9,29 +9,24 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState("@Kamana123");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
-    const emailIsCorrect = email.trim() === authUser.email;
-    const passwordIsCorrect = password === authUser.password;
-
-    if (emailIsCorrect && passwordIsCorrect) {
+    try {
+      const loginResult = await authService.login({
+        email: email.trim(),
+        password,
+      });
       setError("");
-
-      const connectedUser = {
-        id: authUser.id,
-        name: authUser.name,
-        email: authUser.email,
-        role: authUser.role,
-        fullRole: authUser.fullRole,
-      };
-
-      onLogin(connectedUser);
-      return;
+      await onLogin(loginResult);
+    } catch {
+      setError("Email ou mot de passe incorrect.");
+    } finally {
+      setLoading(false);
     }
-
-    setError("Email ou mot de passe incorrect.");
   };
 
   const handleEmailChange = (event) => {
@@ -131,7 +126,7 @@ function Login({ onLogin }) {
               </div>
             </div>
 
-            <button type="submit" className="login-submit-button">
+            <button type="submit" className="login-submit-button" disabled={loading}>
               Se connecter
             </button>
           </form>

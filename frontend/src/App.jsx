@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -21,29 +21,71 @@ import SalesHistory from "./pages/SalesHistory";
 import Users from "./pages/Users";
 import AddUser from "./pages/AddUser";
 import EditUser from "./pages/EditUser";
+import { TOKEN_KEY } from "./services/api";
+import * as authService from "./services/authService";
 
 function App() {
-  const [user, setUser] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem("kamana_user");
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch {
-      localStorage.removeItem("kamana_user");
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = (connectedUser) => {
-    localStorage.setItem("kamana_user", JSON.stringify(connectedUser));
-    setUser(connectedUser);
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = localStorage.getItem(TOKEN_KEY);
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const connectedUser = await authService.getMe();
+        setUser(connectedUser);
+      } catch {
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  const handleLogin = async (loginResultOrCredentials) => {
+    const loginResult =
+      loginResultOrCredentials?.accessToken ||
+      loginResultOrCredentials?.token ||
+      loginResultOrCredentials?.user
+        ? loginResultOrCredentials
+        : await authService.login(loginResultOrCredentials);
+
+    const token = loginResult.accessToken || loginResult.token;
+
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
+
+    setUser(loginResult.user);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("kamana_user");
+  const handleLogout = async () => {
+    try {
+      if (localStorage.getItem(TOKEN_KEY)) {
+        await authService.logout();
+      }
+    } catch {
+      // The local session is still cleared if the API logout fails.
+    }
+
+    localStorage.removeItem(TOKEN_KEY);
     setUser(null);
   };
 
   function ProtectedRoute({ children }) {
+    if (loading) {
+      return <div>Chargement...</div>;
+    }
+
     if (!user) {
       return <Navigate to="/login" replace />;
     }
@@ -59,6 +101,9 @@ function App() {
       <Route
         path="/login"
         element={
+          loading ? (
+            <div>Chargement...</div>
+          ) : 
           user ? (
             <Navigate to="/dashboard" replace />
           ) : (
